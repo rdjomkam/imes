@@ -1,0 +1,38 @@
+# Reinstalled inside the image (Stage 1)
+node_modules
+npm-debug.log
+.npm
+
+# Real secrets — Coolify injects env vars at runtime
+.env
+.env.local
+.env.*.local
+
+# VCS & IDE
+.git
+.gitignore
+.gitattributes
+.idea
+.vscode
+.claude
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Old monolithic server (kept only as historical reference)
+server.js
+
+# Documentation / Claude Design source prompts (not needed at runtime)
+docs
+claude-design-*.md
+README.md
+
+# Backups & raw bundle drops
+public/index.html.bak
+public/new-bundle-original.html
+
+# Local logs / dumps
+*.log
+tmp
+.tmp

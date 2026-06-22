@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IMES · Agents documentaires</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --navy:#0C1E3C;--blue:#2B3991;--blue-300:#6c77bd;--red:#EB222A;--green:#7fe3a8;--green-d:#1F8A5B;--amber:#F4B740;
+      --txt:#fff;--mut:#9fadc9;--lbl:#8ea0c2;--faint:#7587a8;--panel:rgba(8,18,38,0.55);--border:rgba(255,255,255,0.08);
+      --font-display:'Plus Jakarta Sans','Inter',system-ui,sans-serif;--font-body:'Inter',system-ui,sans-serif;--font-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}
+    body{background:var(--navy);color:var(--txt);font-family:var(--font-body);min-height:100vh;display:flex;flex-direction:column}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 34px;border-bottom:1px solid var(--border)}
+    .brand{display:inline-flex;align-items:center;gap:14px;text-decoration:none}
+    .brand img{height:34px;object-fit:contain}
+    .brand .sep{width:1px;height:20px;background:rgba(255,255,255,0.14)}
+    .brand .tag{font-size:12.5px;font-weight:600;letter-spacing:.04em;color:var(--mut)}
+    .demo{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:rgba(235,34,42,0.12);border:1px solid rgba(235,34,42,0.45);color:#ff8a8f;font-size:12px;font-weight:600;font-family:var(--font-body)}
+    main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px}
+    .eyebrow{font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:16px}
+    h1{font-family:var(--font-display);font-weight:800;font-size:clamp(30px,4vw,48px);letter-spacing:-.02em;margin-bottom:14px}
+    .sub{font-size:clamp(15px,1.6vw,18px);color:var(--mut);max-width:640px;line-height:1.55;margin-bottom:44px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;width:100%;max-width:1080px}
+    .tile{position:relative;text-align:left;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:26px 24px;display:flex;flex-direction:column;gap:12px;transition:transform .16s cubic-bezier(.3,.7,.4,1),border-color .16s,box-shadow .16s}
+    .tile.live{cursor:pointer}
+    .tile.live:hover{transform:translateY(-4px);border-color:rgba(255,255,255,0.2);box-shadow:0 20px 50px rgba(0,0,0,.4)}
+    .tile.soon{opacity:.62}
+    .ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(235,34,42,0.14);border:1px solid rgba(235,34,42,0.4);flex:none}
+    .tile.soon .ico{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.12)}
+    .cluster{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--lbl)}
+    .tile h2{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:-.01em}
+    .tile p{font-size:13.5px;line-height:1.5;color:var(--mut);flex:1}
+    .status{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;margin-top:2px}
+    .status.ok{color:#ff9095}
+    .pill-soon{align-self:flex-start;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);border:1px solid rgba(244,183,64,.4);background:rgba(244,183,64,.12);border-radius:6px;padding:3px 8px}
+    .back{margin-top:40px;display:inline-flex;align-items:center;gap:8px;color:var(--mut);text-decoration:none;font-size:14px}
+    footer{text-align:center;padding:16px;color:var(--faint);font-size:12px;border-top:1px solid var(--border)}
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="/"><img src="/imes-logo.png" alt="IMES Consulting"><span class="sep"></span><span class="tag">Agents documentaires</span></a>
+  </header>
+
+  <main>
+    <div class="eyebrow">Lecture & contrôle de documents</div>
+    <h1>Agents documentaires</h1>
+    <p class="sub">Chaque agent lit un document préparé, en extrait les données, contrôle la cohérence et signale les anomalies — sans aucune recherche externe : tout reste dans le document.</p>
+
+    <div class="grid">
+      <a class="tile live" href="/manifeste.html">
+        <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9095" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h12"/><rect x="2" y="3" width="20" height="18" rx="2"/></svg></span>
+        <div class="cluster">Ports & logistique</div>
+        <h2>Manifeste / Connaissement</h2>
+        <p>Bill of lading scanné : extraction, cohérence poids/conteneurs & code douanier, signalement d'anomalie.</p>
+        <span class="status ok">Disponible →</span>
+      </a>
+
+      <a class="tile live" href="/credit.html">
+        <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9095" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M7 15h4M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg></span>
+        <div class="cluster">Banque & assurance</div>
+        <h2>Dossier de crédit</h2>
+        <p>CNI, bulletins, relevés : tri des pièces, cohérence revenus déclarés/constatés, capacité de remboursement, avis motivé.</p>
+        <span class="status ok">Disponible →</span>
+      </a>
+
+      <a class="tile live" href="/rapport.html">
+        <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9095" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></span>
+        <div class="cluster">Énergie & audit</div>
+        <h2>Synthèse de rapport</h2>
+        <p>PDF dense : synthèse exécutive, hiérarchisation des risques, puis questions-réponses ancrées aux pages.</p>
+        <span class="status ok">Disponible →</span>
+      </a>
+
+      <a class="tile live" href="/offre.html">
+        <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9095" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        <div class="cluster">Cotation B2B</div>
+        <h2>Appel d'offres</h2>
+        <p>Cahier des charges : exigences, clauses critiques, manquants, trame de réponse + check-list de conformité.</p>
+        <span class="status ok">Disponible →</span>
+      </a>
+    </div>
+
+    <a class="back" href="/">← Retour à l'accueil</a>
+  </main>
+
+  <footer>Agents documentaires IMES Consulting.</footer>
+</body>
+</html>

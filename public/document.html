@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IMES · Agent documentaire</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --navy:#0C1E3C; --navy-900:#0b1326; --blue:#2B3991; --blue-300:#6c77bd;
+      --red:#EB222A; --green:#7fe3a8; --green-d:#1F8A5B; --amber:#F4B740;
+      --txt:#fff; --mut:#9fadc9; --lbl:#8ea0c2; --faint:#7587a8;
+      --panel:rgba(8,18,38,0.55); --border:rgba(255,255,255,0.08);
+      --font-display:'Plus Jakarta Sans','Inter',system-ui,-apple-system,sans-serif;
+      --font-body:'Inter',system-ui,-apple-system,sans-serif;
+      --font-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{min-height:100%}
+    body{background:var(--navy);color:var(--txt);font-family:var(--font-body);display:flex;flex-direction:column;min-height:100vh}
+    a{color:inherit}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 30px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+    .brand{display:inline-flex;align-items:center;gap:14px;text-decoration:none}
+    .brand img{height:34px;object-fit:contain}
+    .brand .sep{width:1px;height:20px;background:rgba(255,255,255,0.14)}
+    .brand .tag{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;letter-spacing:.04em;color:var(--mut)}
+    .hgroup{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;font-family:var(--font-mono);font-size:11.5px;white-space:nowrap}
+    .pill .dot{width:7px;height:7px;border-radius:50%}
+    .pill.mode{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);color:var(--mut)}
+    .pill.demo{background:rgba(235,34,42,0.12);border:1px solid rgba(235,34,42,0.45);color:#ff8a8f;font-family:var(--font-body);font-weight:600}
+    main{flex:1;display:flex;flex-direction:column;position:relative}
+    .screen{flex:1;display:none;flex-direction:column}
+    .screen.active{display:flex}
+
+    /* ---- entry ---- */
+    .entry{align-items:center;justify-content:safe center;text-align:center;padding:40px 24px;gap:18px;overflow-y:auto}
+    .eyebrow{font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--red)}
+    h1{font-family:var(--font-display);font-weight:800;font-size:clamp(28px,3.6vw,42px);line-height:1.1;letter-spacing:-.02em;max-width:860px}
+    .sub{font-size:16px;line-height:1.55;color:var(--mut);max-width:600px}
+    .drop{width:100%;max-width:560px;border:1.5px dashed rgba(255,255,255,0.18);border-radius:16px;background:var(--panel);padding:26px;display:flex;flex-direction:column;align-items:center;gap:14px}
+    .doc-preview{display:none;max-width:300px;border-radius:10px;box-shadow:0 14px 40px rgba(0,0,0,.45);transform:rotate(-2.2deg);border:1px solid rgba(255,255,255,0.12)}
+    .doc-card{display:none;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;transform:rotate(-1.6deg)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:none;border-radius:9px;font-family:var(--font-body);font-weight:600;cursor:pointer;transition:transform .14s,opacity .14s}
+    .btn:active{transform:translateY(1px)}
+    .btn-ghost{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.18);color:#fff;padding:12px 18px;font-size:14.5px}
+    .btn-accent{background:var(--red);color:#fff;padding:15px 24px;font-size:17px;box-shadow:0 12px 32px rgba(235,34,42,.3)}
+    .btn-accent[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
+    .conf{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--faint);max-width:560px}
+
+    /* ---- running (stepper + journal) ---- */
+    .running{display:none;grid-template-columns:1.15fr .85fr;gap:30px;padding:30px 40px 50px;max-width:1160px;margin:0 auto;width:100%}
+    .running.active{display:grid}
+    .run-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .run-head h2{font-family:var(--font-display);font-weight:700;font-size:24px}
+    .run-head .count{font-family:var(--font-mono);font-size:12.5px;color:var(--lbl)}
+    .steps{display:flex;flex-direction:column;gap:2px}
+    .step{display:flex;gap:16px;padding:13px 14px;border-radius:12px;opacity:.45;transition:opacity .35s,background .35s,border-color .35s;border:1px solid transparent}
+    .step.active{opacity:1;background:rgba(255,255,255,0.03);border-color:rgba(108,119,189,.4)}
+    .step.done{opacity:1}
+    .step .ico{position:relative;width:44px;height:44px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);transition:background .35s,border-color .35s}
+    .step.active .ico{background:var(--blue);border-color:rgba(108,119,189,.6)}
+    .step.done .ico{background:rgba(31,138,91,.18);border-color:rgba(127,227,168,.45)}
+    .step.done.alert .ico{background:rgba(235,34,42,.16);border-color:rgba(235,34,42,.45)}
+    .step .body{flex:1;min-width:0}
+    .step .num{font-family:var(--font-mono);font-size:11px;color:#6b7a98}
+    .step .title{font-size:16px;font-weight:600;color:var(--mut)}
+    .step.active .title,.step.done .title{color:#fff}
+    .step .desc{font-size:12.5px;color:var(--mut);margin-top:3px;line-height:1.4}
+    .step .concl{font-size:13px;color:#cdd7ea;margin-top:6px;line-height:1.5;display:none}
+    .step.done .concl{display:block}
+    .badge-alert{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10.5px;color:#ff8a8f;border:1px solid rgba(235,34,42,.4);border-radius:5px;padding:1px 6px;margin-left:8px;vertical-align:middle}
+    .journal{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;min-height:340px}
+    .journal h3{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--lbl);display:flex;align-items:center;gap:9px;margin-bottom:12px}
+    .journal .lines{flex:1;overflow-y:auto;font-family:var(--font-mono);font-size:12.5px;line-height:1.75;color:#c7d2e8}
+    .jline{display:flex;gap:10px;margin-bottom:2px}
+    .jline .t{color:#5f6f90;flex:none}
+    .jline.accent .x{color:var(--green)}
+    .conf-note{margin-top:14px;font-size:11.5px;color:var(--faint);display:flex;align-items:center;gap:7px}
+
+    /* ---- result ---- */
+    .result{padding:30px 30px 50px;max-width:1000px;margin:0 auto;width:100%;overflow-y:auto}
+    .result.active{display:block}
+    .result .rhead{margin-bottom:22px}
+    .result .ok{display:inline-flex;align-items:center;gap:9px;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+    .result h1{font-size:clamp(24px,3vw,34px)}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:18px}
+    .card h3{font-family:var(--font-display);font-weight:700;font-size:18px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+    .kv{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:8px 16px;font-size:14px}
+    .kv dt{color:var(--lbl)}
+    .kv dd{color:#fff;font-weight:500}
+    .anomaly{display:flex;gap:12px;padding:14px;border-radius:11px;background:rgba(235,34,42,.10);border:1px solid rgba(235,34,42,.35);margin-bottom:10px}
+    .anomaly .g{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;padding:3px 7px;border-radius:5px;background:rgba(235,34,42,.2);color:#ff8a8f;flex:none;height:fit-content}
+    .anomaly .none{color:var(--green)}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+    .export-status{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+    @media (max-width:860px){.running.active{grid-template-columns:1fr}header{padding:14px 18px}.running{padding:22px 18px}}
+    footer{text-align:center;padding:16px;color:var(--faint);font-size:12px;border-top:1px solid var(--border)}
+    .chip-cache{position:fixed;bottom:18px;left:18px;z-index:50;background:rgba(43,57,145,.96);color:#fff;font:600 12px/1.3 var(--font-body);padding:10px 15px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="/">
+      <img src="/imes-logo.png" alt="IMES Consulting">
+      <span class="sep"></span>
+      <span class="tag" id="agent-tag">Agent documentaire</span>
+    </a>
+    <div class="hgroup">
+      <span class="pill mode" id="mode-pill"><span class="dot" style="background:var(--faint)"></span><span id="mode-text">prêt</span></span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Screen 1 — entry -->
+    <section class="screen entry active" id="screen-entry">
+      <div class="eyebrow" id="eyebrow">Agent documentaire</div>
+      <h1 id="title">Analyse de document</h1>
+      <p class="sub" id="sub">Chargez un document préparé, l'agent l'analyse localement.</p>
+      <div class="drop">
+        <input type="file" id="file-input" accept="image/*,application/pdf" hidden>
+        <img class="doc-preview" id="doc-preview" alt="aperçu document">
+        <div class="doc-card" id="doc-card">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ff9095" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          <span id="doc-name" style="font-size:14px;color:#fff"></span>
+        </div>
+        <button class="btn btn-ghost" id="load-btn">📄 Charger le document</button>
+      </div>
+      <button class="btn btn-accent" id="launch-btn" disabled>Lancer l'agent</button>
+      <span class="conf">🔒 Confidentialité : tout reste dans le document — aucune recherche web.</span>
+    </section>
+
+    <!-- Screen 2 — running -->
+    <section class="screen running" id="screen-running">
+      <div>
+        <div class="run-head"><h2 id="run-title">Pipeline de l'agent</h2><span class="count" id="run-count">0 / 0</span></div>
+        <div class="steps" id="steps"></div>
+      </div>
+      <div>
+        <div class="journal">
+          <h3><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7fe3a8" stroke-width="1.9"><path d="M3 12h4l2 7 4-14 2 7h6"/></svg> Journal d'exécution <span id="run-mode" style="font-family:var(--font-mono);font-weight:400;color:var(--faint);text-transform:none;letter-spacing:0"></span></h3>
+          <div class="lines" id="journal-lines"></div>
+        </div>
+        <div class="conf-note">🔒 Traitement local au document · aucune source externe</div>
+      </div>
+    </section>
+
+    <!-- Screen 3 — result -->
+    <section class="screen result" id="screen-result"></section>
+  </main>
+
+  <footer id="footer">Agent documentaire IMES Consulting.</footer>
+  <div class="chip-cache" id="chip-cache">⚡ Résultat instantané — chargé depuis le cache local</div>
+
+  <script src="/js/idb.js"></script>
+  <script src="/js/document.js"></script>
+</body>
+</html>

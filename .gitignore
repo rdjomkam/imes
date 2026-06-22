@@ -1,0 +1,22 @@
+# Dependencies — reinstalled on every deploy
+node_modules
+npm-debug.log
+
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# IDE / OS
+.idea
+.vscode
+.claude
+.DS_Store
+Thumbs.db
+
+# Backups & local-only files
+public/index.html.bak
+public/new-bundle-original.html
+*.log
+tmp
+.tmp
