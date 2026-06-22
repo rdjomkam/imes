@@ -4,8 +4,12 @@
 FROM node:18-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
+# --legacy-peer-deps: @langchain/openai@0.6.17 pins peer core@0.3.x while the
+# rest of @langchain/* in this app is on core@1.x. Locally npm install is
+# lenient about this; npm ci is strict. Legacy resolution installs exactly
+# what's in the lockfile (which works at runtime) without the peer block.
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --omit=dev --no-audit --no-fund
+    npm ci --omit=dev --no-audit --no-fund --legacy-peer-deps
 
 # Stage 2 : final runtime image.
 FROM node:18-alpine AS runner
