@@ -352,11 +352,17 @@ const RESULTS_SCRIPT = `<script>${RESULTS_INJECT_JS}</script>`;
 // catch hardcoded footer disclaimers in the older bundles.
 const GOV_HIDE = `<script>setInterval(function(){var sel=document.querySelectorAll('span,div,p,small,li,footer');for(var i=0;i<sel.length;i++){var el=sel[i];var t=(el.textContent||'').replace(/\\s+/g,' ').trim();if(t==='D\\u00c9MO \\u00b7 DONN\\u00c9ES FICTIVES'||t==='DEMO \\u00b7 DONNEES FICTIVES'){el.style.display='none';continue;}if(el.children.length===0&&/fictives/i.test(t)){el.style.display='none';}}},200);</script>`;
 
-// Hide the Claude Design bundler's splash SVG ("thumbnail" + "Unpacking..." text)
-// so users see a plain navy page while React unpacks, instead of a flash of a
-// huge IMES logo + score gauge. The bundler removes these once mounted; we just
-// preempt the visible flash.
-const SPLASH_HIDE = `<style>#__bundler_thumbnail,#__bundler_loading{display:none !important}body{background:#0C1E3C !important}</style>`;
+// Force the body background to navy so there's never a white flash between
+// HTML parse and React mount (since we strip the bundler splash markup, the
+// browser would otherwise default to white).
+const SPLASH_HIDE = `<style>body{background:#0C1E3C !important}</style>`;
+
+// Completely strip the Claude Design bundler's splash SVG + "Unpacking..." text
+// from every served bundle. The bundler's main script tolerates the missing
+// elements (it null-guards getElementById('__bundler_loading')), so unpack
+// still works — there's just no visible splash flash at all.
+const STRIP_SPLASH_RE = /<div id="__bundler_(?:thumbnail|loading)"[\s\S]*?<\/div>\s*/g;
+function stripSplash(html) { return html.replace(STRIP_SPLASH_RE, ""); }
 
 const LOGO_INJECT = `<script>setInterval(function(){var hdr=document.querySelectorAll('header,nav,[class*="header"],[class*="nav"],[class*="topbar"]');for(var i=0;i<hdr.length;i++){var els=hdr[i].querySelectorAll('span,div');for(var j=0;j<els.length;j++){var t=els[j].textContent.replace(/\\s+/g,' ').trim();if(t==='IMES'||t==='IMES Consulting'||t==='IMESConsulting'){var a=document.createElement('a');a.href='/';a.style.cssText='display:inline-flex;align-items:center;text-decoration:none;flex:none;';var img=document.createElement('img');img.src='/imes-logo.png';img.alt='IMES Consulting';img.style.cssText='height:38px;object-fit:contain;';a.appendChild(img);els[j].parentNode.replaceChild(a,els[j]);if(t==='IMES'){var next=a.nextElementSibling;if(next&&next.textContent.trim()==='Consulting')next.style.display='none';}return}}}},300);</script>`;
 
@@ -387,21 +393,21 @@ function serveStatic(req, res) {
       return;
     }
     if (filePath.endsWith("agent.html")) {
-      let html = data.toString("utf-8");
+      let html = stripSplash(data.toString("utf-8"));
       html = html.replace("<head>", "<head>" + SPLASH_HIDE + UI_OVERRIDES + STREAM_SCRIPT + GOV_HIDE + LOGO_INJECT);
       res.writeHead(200, { "Content-Type": mime });
       res.end(html);
       return;
     }
     if (filePath.endsWith("results.html")) {
-      let html = data.toString("utf-8");
+      let html = stripSplash(data.toString("utf-8"));
       html = html.replace("<head>", "<head>" + SPLASH_HIDE + UI_OVERRIDES + RESULTS_SCRIPT + GOV_HIDE + LOGO_INJECT);
       res.writeHead(200, { "Content-Type": mime });
       res.end(html);
       return;
     }
     if (filePath.endsWith("learn.html")) {
-      let html = data.toString("utf-8");
+      let html = stripSplash(data.toString("utf-8"));
       html = html.replace("<head>", "<head>" + SPLASH_HIDE + UI_OVERRIDES + IDB_SCRIPT + IDB_PROFILES_SCRIPT + LOGO_INJECT);
       res.writeHead(200, { "Content-Type": mime });
       res.end(html);
@@ -409,7 +415,7 @@ function serveStatic(req, res) {
     }
     const docBundle = DOC_BUNDLES[path.basename(filePath)];
     if (docBundle) {
-      let html = data.toString("utf-8");
+      let html = stripSplash(data.toString("utf-8"));
       const cfg = `<script>window.IMES_DOC_CFG=${JSON.stringify(docBundle)};</script>`;
       html = html.replace("<head>", "<head>" + SPLASH_HIDE + IDB_SCRIPT + cfg + DOC_HARNESS_SCRIPT + GOV_HIDE + LOGO_INJECT);
       res.writeHead(200, { "Content-Type": mime });
