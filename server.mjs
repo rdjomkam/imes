@@ -105,8 +105,8 @@ async function handleAgent(req, res) {
     return jsonRes(res, 400, { error: "company et role requis", code: "MISSING_FIELDS" });
   }
 
-  if (!ANTHROPIC_API_KEY) {
-    return jsonRes(res, 503, { error: "Clé API Anthropic non configurée", code: "NO_API_KEY" });
+  if (!DEEPSEEK_KEY) {
+    return jsonRes(res, 503, { error: "DEEPSEEK_API_KEY non configurée — l'agent de compte tourne 100% DeepSeek.", code: "NO_API_KEY" });
   }
 
   res.writeHead(200, {
@@ -352,6 +352,12 @@ const RESULTS_SCRIPT = `<script>${RESULTS_INJECT_JS}</script>`;
 // catch hardcoded footer disclaimers in the older bundles.
 const GOV_HIDE = `<script>setInterval(function(){var sel=document.querySelectorAll('span,div,p,small,li,footer');for(var i=0;i<sel.length;i++){var el=sel[i];var t=(el.textContent||'').replace(/\\s+/g,' ').trim();if(t==='D\\u00c9MO \\u00b7 DONN\\u00c9ES FICTIVES'||t==='DEMO \\u00b7 DONNEES FICTIVES'){el.style.display='none';continue;}if(el.children.length===0&&/fictives/i.test(t)){el.style.display='none';}}},200);</script>`;
 
+// Hide the Claude Design bundler's splash SVG ("thumbnail" + "Unpacking..." text)
+// so users see a plain navy page while React unpacks, instead of a flash of a
+// huge IMES logo + score gauge. The bundler removes these once mounted; we just
+// preempt the visible flash.
+const SPLASH_HIDE = `<style>#__bundler_thumbnail,#__bundler_loading{display:none !important}body{background:#0C1E3C !important}</style>`;
+
 const LOGO_INJECT = `<script>setInterval(function(){var hdr=document.querySelectorAll('header,nav,[class*="header"],[class*="nav"],[class*="topbar"]');for(var i=0;i<hdr.length;i++){var els=hdr[i].querySelectorAll('span,div');for(var j=0;j<els.length;j++){var t=els[j].textContent.replace(/\\s+/g,' ').trim();if(t==='IMES'||t==='IMES Consulting'||t==='IMESConsulting'){var a=document.createElement('a');a.href='/';a.style.cssText='display:inline-flex;align-items:center;text-decoration:none;flex:none;';var img=document.createElement('img');img.src='/imes-logo.png';img.alt='IMES Consulting';img.style.cssText='height:38px;object-fit:contain;';a.appendChild(img);els[j].parentNode.replaceChild(a,els[j]);if(t==='IMES'){var next=a.nextElementSibling;if(next&&next.textContent.trim()==='Consulting')next.style.display='none';}return}}}},300);</script>`;
 
 // New display/body fonts (replace the AI-looking serif) + proportional button
@@ -382,21 +388,21 @@ function serveStatic(req, res) {
     }
     if (filePath.endsWith("agent.html")) {
       let html = data.toString("utf-8");
-      html = html.replace("<head>", "<head>" + UI_OVERRIDES + STREAM_SCRIPT + GOV_HIDE + LOGO_INJECT);
+      html = html.replace("<head>", "<head>" + SPLASH_HIDE + UI_OVERRIDES + STREAM_SCRIPT + GOV_HIDE + LOGO_INJECT);
       res.writeHead(200, { "Content-Type": mime });
       res.end(html);
       return;
     }
     if (filePath.endsWith("results.html")) {
       let html = data.toString("utf-8");
-      html = html.replace("<head>", "<head>" + UI_OVERRIDES + RESULTS_SCRIPT + GOV_HIDE + LOGO_INJECT);
+      html = html.replace("<head>", "<head>" + SPLASH_HIDE + UI_OVERRIDES + RESULTS_SCRIPT + GOV_HIDE + LOGO_INJECT);
       res.writeHead(200, { "Content-Type": mime });
       res.end(html);
       return;
     }
     if (filePath.endsWith("learn.html")) {
       let html = data.toString("utf-8");
-      html = html.replace("<head>", "<head>" + UI_OVERRIDES + IDB_SCRIPT + IDB_PROFILES_SCRIPT + LOGO_INJECT);
+      html = html.replace("<head>", "<head>" + SPLASH_HIDE + UI_OVERRIDES + IDB_SCRIPT + IDB_PROFILES_SCRIPT + LOGO_INJECT);
       res.writeHead(200, { "Content-Type": mime });
       res.end(html);
       return;
@@ -405,7 +411,7 @@ function serveStatic(req, res) {
     if (docBundle) {
       let html = data.toString("utf-8");
       const cfg = `<script>window.IMES_DOC_CFG=${JSON.stringify(docBundle)};</script>`;
-      html = html.replace("<head>", "<head>" + IDB_SCRIPT + cfg + DOC_HARNESS_SCRIPT + GOV_HIDE + LOGO_INJECT);
+      html = html.replace("<head>", "<head>" + SPLASH_HIDE + IDB_SCRIPT + cfg + DOC_HARNESS_SCRIPT + GOV_HIDE + LOGO_INJECT);
       res.writeHead(200, { "Content-Type": mime });
       res.end(html);
       return;
