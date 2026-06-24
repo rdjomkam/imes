@@ -12,6 +12,7 @@ import { callVision, fileBlock } from "./src/utils/vision-model.mjs";
 import { getDocumentPrompt, EXTRACT_PROMPT, RAPPORT_QA_PROMPT } from "./src/prompts/document-prompts.mjs";
 import { repairJSON } from "./src/utils/json-repair.mjs";
 import { createModel } from "./src/utils/model.mjs";
+import { searchCompanies } from "./src/utils/company-search.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -120,9 +121,14 @@ async function handleAgent(req, res) {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   }
 
+  // Disambiguation anchor (optional in Phase 0 — used by prompts to lock the
+  // analysis onto THE exact company chosen by the user before pipeline ran).
+  const resolved = input.companyResolved && typeof input.companyResolved === "object" ? input.companyResolved : null;
+  const anchoredCompany = resolved && resolved.canonicalName ? resolved.canonicalName : company;
+
   try {
-    console.log(`[agent] LangGraph pipeline (streaming) — ${company} / ${role}`);
-    const stream = await app.stream({ company, role }, { streamMode: "updates" });
+    console.log(`[agent] LangGraph pipeline (streaming) — ${anchoredCompany} / ${role}` + (resolved && resolved.linkedinSlug ? ` [linkedin:${resolved.linkedinSlug}]` : resolved && resolved.degraded ? " [dégradé]" : ""));
+    const stream = await app.stream({ company: anchoredCompany, role, resolved }, { streamMode: "updates" });
     const allSteps = [];
     let dossier = null;
     let webResults = [];
@@ -244,6 +250,28 @@ async function handleLearn(req, res) {
 // POST /api/document — document agents (multimodal Claude vision). One call →
 // { type, live, steps[], result{} }. 503 on failure → front falls back to repli.
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// POST /api/company-search — disambiguation step (LinkedIn candidates).
+// Called by the intake page BEFORE /api/agent so the user picks THE exact
+// company. Returns: { candidates:[{canonicalName,linkedinSlug,linkedinUrl,summary}], autoSelect?:Candidate }
+// ---------------------------------------------------------------------------
+async function handleCompanySearch(req, res) {
+  let input;
+  try { input = JSON.parse(await readBody(req)); }
+  catch { return jsonRes(res, 400, { error: "JSON invalide" }); }
+  const query = (input.query || "").trim();
+  if (!query) return jsonRes(res, 400, { error: "query requis" });
+  if (!TAVILY_API_KEY) return jsonRes(res, 503, { error: "TAVILY_API_KEY non configurée" });
+  try {
+    const out = await searchCompanies(query);
+    console.log(`[company-search] "${query}" → ${out.candidates.length} candidat(s), auto=${out.autoSelect ? out.autoSelect.canonicalName : "non"}`);
+    return jsonRes(res, 200, out);
+  } catch (err) {
+    console.error("[company-search]", err.message);
+    return jsonRes(res, 503, { error: err.message, code: "SEARCH_ERROR" });
+  }
+}
+
 async function handleDocument(req, res) {
   let input;
   try {
@@ -331,9 +359,11 @@ const RESULTS_INJECT_JS = fs.readFileSync(path.join(__dirname, "public", "js", "
 const IDB_JS = fs.readFileSync(path.join(__dirname, "public", "js", "idb.js"), "utf-8");
 const IDB_PROFILES_JS = fs.readFileSync(path.join(__dirname, "public", "js", "idb-profiles.js"), "utf-8");
 const DOC_HARNESS_JS = fs.readFileSync(path.join(__dirname, "public", "js", "doc-harness.js"), "utf-8");
+const DISAMBIG_JS = fs.readFileSync(path.join(__dirname, "public", "js", "disambig.js"), "utf-8");
 const IDB_SCRIPT = `<script>${IDB_JS}</script>`;
 const IDB_PROFILES_SCRIPT = `<script>${IDB_PROFILES_JS}</script>`;
 const DOC_HARNESS_SCRIPT = `<script>${DOC_HARNESS_JS}</script>`;
+const DISAMBIG_SCRIPT = `<script>${DISAMBIG_JS}</script>`;
 // Claude-designed document bundles → { served file : { type, specimen } }
 const DOC_BUNDLES = {
   "credit.html": { type: "credit", specimen: "/specimens/credit.pdf" },
@@ -394,7 +424,7 @@ function serveStatic(req, res) {
     }
     if (filePath.endsWith("agent.html")) {
       let html = stripSplash(data.toString("utf-8"));
-      html = html.replace("<head>", "<head>" + SPLASH_HIDE + UI_OVERRIDES + STREAM_SCRIPT + GOV_HIDE + LOGO_INJECT);
+      html = html.replace("<head>", "<head>" + SPLASH_HIDE + UI_OVERRIDES + STREAM_SCRIPT + DISAMBIG_SCRIPT + GOV_HIDE + LOGO_INJECT);
       res.writeHead(200, { "Content-Type": mime });
       res.end(html);
       return;
@@ -450,6 +480,10 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && req.url === "/api/document") {
     return handleDocument(req, res);
+  }
+
+  if (req.method === "POST" && req.url === "/api/company-search") {
+    return handleCompanySearch(req, res);
   }
 
   if (req.method === "GET" && req.url === "/api/profile") {

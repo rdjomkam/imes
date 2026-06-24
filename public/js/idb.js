@@ -6,7 +6,7 @@
    silently degrades to "no cache" — callers fall back to the live pipeline.
    Exposes window.IMESIDB = { get, put, getAll, del }. */
 (function () {
-  var DB = 'imes-cache', VER = 2;
+  var DB = 'imes-cache', VER = 3;
   var _open = null;
 
   function open() {
@@ -22,6 +22,8 @@
           // v2 — document agents
           if (!db.objectStoreNames.contains('documents')) db.createObjectStore('documents', { keyPath: 'key' });
           if (!db.objectStoreNames.contains('document_qa')) db.createObjectStore('document_qa', { keyPath: 'key' });
+          // v3 — company disambiguation (user-confirmed entity → canonical record)
+          if (!db.objectStoreNames.contains('company_resolved')) db.createObjectStore('company_resolved', { keyPath: 'key' });
         };
         rq.onsuccess = function () { resolve(rq.result); };
         rq.onerror = function () { reject(rq.error); };

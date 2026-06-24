@@ -7,4 +7,7 @@ export const AgentState = Annotation.Root({
   webSources: Annotation({ reducer: (_, b) => b, default: () => [] }),
   steps: Annotation({ reducer: (a, b) => [...a, b], default: () => [] }),
   dossier: Annotation({ reducer: (_, b) => b, default: () => null }),
+  // Disambiguation anchor (chosen by the user before launch) — locks the
+  // pipeline onto the canonical company. { canonicalName, linkedinSlug?, linkedinUrl?, summary?, degraded? } or null.
+  resolved: Annotation({ reducer: (_, b) => b, default: () => null }),
 });

@@ -185,7 +185,20 @@
     var idb = _idb();
     var ctrl = new AbortController();
     setTimeout(function () { ctrl.abort(); }, 300000);
-    var newOpts = Object.assign({}, opts, { signal: ctrl.signal });
+    // Attach the resolved company (chosen via the disambiguation modal) so the
+    // backend anchors the pipeline on the canonical entity rather than free text.
+    var body = opts.body;
+    try {
+      var raw = sessionStorage.getItem('imes_resolved_company');
+      if (raw) {
+        sessionStorage.removeItem('imes_resolved_company');
+        var resolved = JSON.parse(raw);
+        var parsed = JSON.parse(body || '{}');
+        parsed.companyResolved = resolved;
+        body = JSON.stringify(parsed);
+      }
+    } catch (e) { /* keep original body on any error */ }
+    var newOpts = Object.assign({}, opts, { signal: ctrl.signal, body: body });
 
     return _f.call(window, url, newOpts).then(function (res) {
       var ct = res.headers.get('content-type') || '';
